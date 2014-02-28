@@ -172,7 +172,7 @@
 				}
 				 levelLines += '</div>'
 				 
-				 $firstCol.html(levelLines + ' <div class="epxander"></div> ' + firstColVal);
+				 $firstCol.html(levelLines + ' <div class="expander"></div> ' + firstColVal);
 				 
 				$row.on('click', self.rowClicker);
 				prevLevel = currentLevel;
