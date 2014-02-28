@@ -1,0 +1,38 @@
+{
+    "name": "tabelizer",
+    "title": "jQuery Tabelizer",
+    "description": "jQuery plugin to provide multi level grouping indicators for tables.",
+    "keywords": [
+        "tables",
+        "grouping",
+        "subtotal"
+    ],
+    "version": "1.0.0",
+    "author": {
+        "name": "Rafael Huisman",
+        "url": "http://powerconsulting.co"
+    },
+    "maintainers": [
+        {
+            "name": "Rafael Huisman",
+            "url": "http://powerconsulting.co"
+        }
+    ],
+    "licenses": [
+        {
+            "type": "MIT",
+            "url": "https://github.com/jquery/jquery-color/blob/2.1.2/MIT-LICENSE.txt"
+        },
+		{
+            "type": "GPL 2",
+            "url": "http://www.gnu.org/licenses/gpl-2.0.html"
+        }
+    ],
+    "bugs": "https://github.com/powerconsulting/jquery.tabelizer/issues",
+    "homepage": "https://github.com/powerconsulting/jquery.tabelizer",
+    "download": "https://github.com/powerconsulting/jquery.tabelizer",
+    "dependencies": {
+        "jquery": ">=1.6",
+        "jquery.ui": ">=1.8"
+    }
+}
