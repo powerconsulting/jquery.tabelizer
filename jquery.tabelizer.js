@@ -17,7 +17,7 @@
  * @example $('#table1').tabelize();
  * @desc Create a simple tabelized interface.
  */
- 
+
 (function($){
 	var self = {};
 	
