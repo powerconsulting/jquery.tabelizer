@@ -1,7 +1,7 @@
 /*
  * 
- * Tabelizer 1.0.1 - multi level grouping indicators for tables
- * Version 1.0.1
+ * Tabelizer 1.0.2 - multi level grouping indicators for tables
+ * Version 1.0.2
  * @requires jQuery v1.6+ and jQuery.ui core
  * 
  * Copyright (c) 2014 Rafael Huisman
@@ -13,7 +13,7 @@
 /**
  * 
  * @description Create a table with multi level grouping indicators.
- * 
+ * @demo http://powerconsulting.co/Samples/Tabelizer
  * @example $('#table1').tabelize();
  * @desc Create a simple tabelized interface.
  */
