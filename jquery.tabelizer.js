@@ -1,7 +1,7 @@
 /*
  * 
- * Tabelizer 1.0 - multi level grouping indicators for tables
- * Version 1.0.0
+ * Tabelizer 1.0.1 - multi level grouping indicators for tables
+ * Version 1.0.1
  * @requires jQuery v1.6+ and jQuery.ui core
  * 
  * Copyright (c) 2014 Rafael Huisman
@@ -22,18 +22,20 @@
 	var self = {};
 	
 	self.rowClicker = function(evt){
-		var $elm = $(evt.currentTarget);
-		var id = $elm.attr('id');
-		if ($elm.hasClass('contracted')){
-			$elm.removeClass('contracted').addClass('expanded');
+		var $row = $(evt.currentTarget);
+		var id = $row.attr('id');
+		
+		//Simple toggle for contract/expand logic
+		if ($row.hasClass('contracted')){
+			$row.removeClass('contracted').addClass('expanded');
 			self.toggleChildren(id, true);
 		}else{
-			$elm.removeClass('expanded').addClass('contracted');
+			$row.removeClass('expanded').addClass('contracted');
 			self.toggleChildren(id, false);
 		}
 		
+		//After any contraction or expansion we need to resetup the lines since they will likely change.
 		self.updateLines();
-		
 	}
 	
 	self.updateLines = function(){
@@ -41,24 +43,29 @@
 		var currentLevel = '';
 		var prevLevel = '';
 		$prevRow = null;
-		$('#' + self.tableId + ' tr:not(.hidden)').each(function(){
+		//We only want to apply the lines to the non hidden children.
+		self.caller.find('tr:not(.hidden):not(.hiding)').each(function(){
 			$row = $(this);
+			//header rows do not get included in the grouping
 			if (!$row.hasClass('header')){
 				currentLevel = $row.data('level');
-			
-				var rowClass = '';
+				
+				//Remove all existing first and last classes for all available levels to ensure we have a clean slate
 				for(var x = self.maxLevel;x > 0;x--)
 					$row.removeClass('l' + x + '-first').removeClass('l' + x + '-last')
 				
+				var rowClass = '';
+				//We only add the grouping lines if the level has changed, this is true for the first and last lines. 
 				if (currentLevel != prevLevel){
-					rowClass += ' l' + currentLevel + '-first'
-					
+					//if the previous level is bigger than the current level then we know that we went back in the tree and the previous item is a last one, we want to mark is as the last for any level up to the current
 					if (prevLevel != '' && prevLevel > currentLevel){
 						for (var x = (prevLevel); x >= currentLevel; x--){
 							$prevRow.addClass(' l' + (parseInt(x)) + '-last')
 						}
+					//If the previous level had a sibling right before it, the previous row is also a first for the previous level
+					}else if (prevLevel != '' && prevLevel < currentLevel){
+						$prevRow.addClass(' l' + (prevLevel) + '-first')
 					}
-						
 				}
 				
 				$row.addClass(rowClass)
@@ -68,6 +75,7 @@
 			}
 		});
 		
+		//We need to check if the last item in the grid needs a X-last class.
 		if ($prevRow != null && prevLevel != '' && prevLevel > 1){
 			for (var x = (prevLevel-1); x > 0; x--){
 				$prevRow.addClass(' l' + (parseInt(x)) + '-last')
@@ -75,12 +83,13 @@
 		}
 	}
 	
-	self.toggleChildren = function(id, display){
+	//this method toggles the children on or off, including a sliding motion
+	self.toggleChildren = function(id, display, onSlideComplete){
 		var startAction = false;
 		var stopAction = false;
 		var prevRowLevel = null;
 		var startLevel = 0;
-		$('#' + self.tableId + ' tr').each( function(){
+		self.caller.find('tr').each( function(){
 			var $row = $(this);
 			var rowId = $row.attr('id');
 			var rowLevel = $row.data('level');
@@ -105,23 +114,22 @@
 			//console.log('rowId: ' + rowId + ' perform: ' + ((!skipAction && startAction && !stopAction &&  rowId != id)) + ' skip: ' + skipAction + ' level: ' + rowLevel + ' -> ' + (startLevel))
 			
 			if (!skipAction && startAction && !stopAction &&  rowId != id){
-			
-				//console.log(rowId);
-			
 				if (display){
 					$row.removeClass('hidden');
 					
-					$row.find('td').wrapInner('<div style="display: none;" />').parent().find('td > div').slideDown(200, function(){
+					$row.find('td').wrapInner('<div style="display: none;" />').parent().find('td > div').slideDown(100, function(){
 						var $set = $(this);
 						$set.replaceWith($set.contents());
 					 });
 					
 				}
 				else{
-					$row.find('td').wrapInner('<div style="" />').parent().find('td > div').slideUp(200, function(){
+					$row.addClass('hiding');
+					$row.find('td').wrapInner('<div style="" />').parent().find('td > div').slideUp(100, function(){
 						var $set = $(this);
 						$set.replaceWith($set.contents());
 						$row.addClass('hidden');
+						$row.removeClass('hiding');
 					 });
 					 
 					$row.removeClass('expanded')
@@ -139,57 +147,48 @@
 		var currentLevel = '';
 		var prevLevel = '';
 		$prevRow = null;
-		$('#' + self.tableId + ' tr').each( function(){
+		//we want to find all rows of the caller table to apply the base classes to them and make them expandable
+		self.caller.find('tr').each( function(){
 			$row = $(this);
+			//don't apply any logic tot the header row
 			if (!$row.hasClass('header')){
 				currentLevel = $row.data('level');
 			
+				//initially all rows other than the first level are hidden
 				var rowClass = 'l' + currentLevel + ' contracted ' + (currentLevel > 1 ? ' hidden' : '');
-				if (currentLevel != prevLevel){
 				
-					rowClass += ' l' + currentLevel + '-first'
-					
-					if (prevLevel != '' && prevLevel > currentLevel){
-						for (var x = (prevLevel); x >= currentLevel; x--){
-							$prevRow.addClass(' l' + (parseInt(x)) + '-last')
-						}
-					}
-						
-				}
-				
+				//keep track of the highest level, this is used for the grouping lines
 				if (currentLevel > self.maxLevel)
 					self.maxLevel=parseInt(currentLevel);
 				
 				$row.addClass(rowClass)
 				
+				//apply labels around the first column text, so that we can add in the controls and expander image
 				$firstCol = $($row.children('td')[0])
 				var firstColVal = '<div class="label">' + $firstCol.html() + '</div>';
 				var parentLevels = 0;
 				
+				//add in the line control div, add it in for every level up until your current level, this is to ensure we can show all the needed lines.
 				var levelLines = '<div class="control"> ';
 				for(var x = 0; x <= (currentLevel-1); x++){
 					levelLines += ' <div class="line level' + (x + 1) + '"><div class="vert"></div><div class="horz"></div></div> ';
 				}
-				 levelLines += '</div>'
+				levelLines += '</div>'
+				//Add the expanded class, which through css adds in the arrow image
+				$firstCol.html(levelLines + ' <div class="expander"></div> ' + firstColVal);
 				 
-				 $firstCol.html(levelLines + ' <div class="expander"></div> ' + firstColVal);
-				 
+				//apply the method to be called on each row click
 				$row.on('click', self.rowClicker);
 				prevLevel = currentLevel;
 				$prevRow= $row;
 			}
 		});
 		
-		if ($prevRow != null && prevLevel != '' && prevLevel > 1){
-			for (var x = (prevLevel-1); x > 0; x--){
-				$prevRow.addClass(' l' + (parseInt(x)) + '-last')
-			}
-		}
+		self.updateLines();
 	}
 
 	$.fn.tabelize = function(confProp){
 		self.caller = this;
-		self.tableId = this.attr('id');
 		self.init();
 	};
 })(jQuery);

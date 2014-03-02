@@ -3,8 +3,8 @@ jquery.tabelizer
 
 Multi level grouping indicators for tables.
 
-Tabelizer 1.0 - multi level grouping indicators for tables
-Version 1.0.0
+Tabelizer 1.0.1 - multi level grouping indicators for tables
+Version 1.0.1
 Requires jQuery v1.6+ and jQuery.ui core
 
 Copyright (c) 2014 Rafael Huisman
