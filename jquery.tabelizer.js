@@ -1,7 +1,7 @@
 /*
  * 
- * Tabelizer 1.0.2 - multi level grouping indicators for tables
- * Version 1.0.2
+ * Tabelizer 1.0.3 - multi level grouping indicators for tables
+ * Version 1.0.3
  * @requires jQuery v1.6+ and jQuery.ui core
  * 
  * Copyright (c) 2014 Rafael Huisman
@@ -21,8 +21,22 @@
 (function($){
 	var self = {};
 	
+	self.isFunction = function(func) {
+		return func && {}.toString.call(func) === '[object Function]';
+	}
+	
 	self.rowClicker = function(evt){
-		var $row = $(evt.currentTarget);
+	
+		if (typeof self.conf.onBeforeRowClick != 'undefined' && self.isFunction(self.conf.onBeforeRowClick))
+			self.conf.onBeforeRowClick.apply(self.getPublicObj(), [evt]);
+		
+		var $elm = $(evt.currentTarget);
+		
+		if (!$elm.is('tr'))
+			$elm = $elm.parentsUntil('tr').parent()
+		
+		$row = $elm;
+		
 		var id = $row.attr('id');
 		
 		//Simple toggle for contract/expand logic
@@ -36,6 +50,11 @@
 		
 		//After any contraction or expansion we need to resetup the lines since they will likely change.
 		self.updateLines();
+		
+		if (typeof self.conf.onAfterRowClick != 'undefined' && self.isFunction(self.conf.onAfterRowClick))
+			self.conf.onAfterRowClick.apply(self.getPublicObj(), [evt]);
+			
+		return self.getPublicObj();
 	}
 	
 	self.updateLines = function(){
@@ -81,6 +100,8 @@
 				$prevRow.addClass(' l' + (parseInt(x)) + '-last')
 			}
 		}
+		
+		return self.getPublicObj();
 	}
 	
 	//this method toggles the children on or off, including a sliding motion
@@ -139,6 +160,12 @@
 			
 			prevRowLevel = rowLevel;
 		});
+		
+		return self.getPublicObj();
+	}
+	
+	self.updateData = function(){
+		self.caller.data('tabelizer', self);
 	}
 	
 	self.maxLevel = 0;
@@ -177,18 +204,56 @@
 				//Add the expanded class, which through css adds in the arrow image
 				$firstCol.html(levelLines + ' <div class="expander"></div> ' + firstColVal);
 				 
-				//apply the method to be called on each row click
-				$row.on('click', self.rowClicker);
+				//apply the method to be called on each row click, if fullRowClickable is set to false, then only the expander is clickable
+				if (self.conf.fullRowClickable)
+					$row.on('click', self.conf.onRowClick);
+				else
+					$row.find('.expander').on('click', self.conf.onRowClick);
 				prevLevel = currentLevel;
 				$prevRow= $row;
 			}
 		});
 		
 		self.updateLines();
+		
+		if (typeof self.conf.onReady != 'undefined' && self.isFunction(self.conf.onReady))
+			self.conf.onReady.apply(self.getPublicObj(), []);
+			
+		return self.getPublicObj();
 	}
-
+	
+	self.getPublicObj = function(){ return {
+		options : self.conf,
+		toggleChildren : self.toggleChildren,
+		updateLines : self.updateLines,
+		rowClicker : self.rowClicker,
+		maxLevel : self.maxLevel,
+		updateData : self.updateData
+	}};
+	
+	self.conf = {
+		onRowClick : self.rowClicker,
+		fullRowClickable : true,//must be set before init
+		onBeforeRowClick : null,
+		onAfterRowClick : null,
+		onReady : null
+	};
+	
 	$.fn.tabelize = function(confProp){
-		self.caller = this;
-		self.init();
+		
+		var existingSelf = this.data('tabelizer');
+		if (typeof existingSelf == 'undefined'){
+			$.extend(self.conf, confProp);
+			self.caller = this;
+			self.init();
+			
+		}else{
+			self = existingSelf;
+			$.extend(self.conf, confProp);
+		}
+		//Store copy of self in data for repeat calls, update it after any repeating call
+		self.updateData();
+		
+		return self.getPublicObj()
 	};
 })(jQuery);
