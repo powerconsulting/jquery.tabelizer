@@ -39,17 +39,19 @@
 		
 		var id = $row.attr('id');
 		
-		//Simple toggle for contract/expand logic
-		if ($row.hasClass('contracted')){
-			$row.removeClass('contracted').addClass('expanded');
-			self.toggleChildren(id, true);
-		}else{
-			$row.removeClass('expanded').addClass('contracted');
-			self.toggleChildren(id, false);
-		}
+		if (!row.hasClass('childless')){
+			//Simple toggle for contract/expand logic
+			if ($row.hasClass('contracted')){
+				$row.removeClass('contracted').addClass('expanded');
+				self.toggleChildren(id, true);
+			}else{
+				$row.removeClass('expanded').addClass('contracted');
+				self.toggleChildren(id, false);
+			}
 		
-		//After any contraction or expansion we need to resetup the lines since they will likely change.
-		self.updateLines();
+			//After any contraction or expansion we need to resetup the lines since they will likely change.
+			self.updateLines();
+		}
 		
 		if (typeof self.conf.onAfterRowClick != 'undefined' && self.isFunction(self.conf.onAfterRowClick))
 			self.conf.onAfterRowClick.apply(self.getPublicObj(), [evt]);
