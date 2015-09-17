@@ -28,7 +28,7 @@ table.controller .l1.contracted .control .line.level1{display:none;}
 table.controller .l2.contracted .control .line.level2{display:none;}
 table.controller .l3.contracted .control .line.level3{display:none;}
 
-table.controller .l4 .expander{display:none;}
+/*table.controller .l4 .expander{display:none;}*/
 
 table.controller .label {margin-right:30px;}
 table.controller td.data {text-align:center;min-width:90px;}
